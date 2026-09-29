@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useLenisScroll } from './hooks/useLenisScroll'
-import { TorchCursor } from './components/common/TorchCursor'
+import { MansionScene } from './components/canvas/MansionScene'
 import { SoundToggle } from './components/common/SoundToggle'
 import { ActIndicator } from './components/common/ActIndicator'
 import { Act1Gate } from './components/sections/Act1Gate'
@@ -62,8 +62,8 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen bg-manoir-900 text-fantome font-sans selection:bg-citrouille selection:text-manoir-900">
-      {/* Masque interactif de lampe torche */}
-      <TorchCursor enabled={torchActive} />
+      {/* Scene 3D WebGL (Architecture, Brume, Eclairage 3D et Shader de lampe torche) */}
+      <MansionScene currentAct={currentAct} torchActive={torchActive} />
 
       {/* Bouton de son discret */}
       <SoundToggle
@@ -74,15 +74,7 @@ export default function App() {
       {/* Indicateur de progression des 4 actes */}
       <ActIndicator activeAct={currentAct} totalActs={4} />
 
-      {/* Ambiance d ombre de fond */}
-      <div 
-        className="fixed inset-0 pointer-events-none z-0"
-        aria-hidden="true"
-      >
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[700px] h-[700px] rounded-full bg-abysse/30 blur-[180px]" />
-      </div>
-
-      {/* Parcours en 4 Actes */}
+      {/* Parcours scrollytelling en 4 Actes */}
       <main className="relative z-10">
         <Act1Gate onEnter={handleEnter} torchActive={torchActive} />
         <Act2Mansion
