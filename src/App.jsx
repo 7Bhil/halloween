@@ -1,50 +1,103 @@
-import { useState } from 'react'
-import { Flame } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { useLenisScroll } from './hooks/useLenisScroll'
+import { TorchCursor } from './components/common/TorchCursor'
+import { SoundToggle } from './components/common/SoundToggle'
+import { ActIndicator } from './components/common/ActIndicator'
+import { Act1Gate } from './components/sections/Act1Gate'
+import { Act2Mansion } from './components/sections/Act2Mansion'
+import { Act3Mirror } from './components/sections/Act3Mirror'
+import { Act4Pumpkin } from './components/sections/Act4Pumpkin'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 export default function App() {
-  const [lightsOn, setLightsOn] = useState(false)
+  const { scrollTo } = useLenisScroll()
+  const [currentAct, setCurrentAct] = useState(1)
+  const [torchActive, setTorchActive] = useState(false)
+  const [isPlayingSound, setIsPlayingSound] = useState(false)
+  const [foundObjects, setFoundObjects] = useState([])
+  const [monsterResult, setMonsterResult] = useState(null)
+
+  // Suivi de l acte actif au scroll avec ScrollTrigger
+  useEffect(() => {
+    const sections = ['#acte-1', '#acte-2', '#acte-3', '#acte-4']
+    const triggers = sections.map((sel, idx) => {
+      return ScrollTrigger.create({
+        trigger: sel,
+        start: 'top 55%',
+        end: 'bottom 55%',
+        onEnter: () => setCurrentAct(idx + 1),
+        onEnterBack: () => setCurrentAct(idx + 1),
+      })
+    })
+
+    return () => {
+      triggers.forEach((t) => t.kill())
+    }
+  }, [])
+
+  const handleEnter = () => {
+    setTorchActive(true)
+    setIsPlayingSound(true)
+    scrollTo('#acte-2', { duration: 1.6 })
+  }
+
+  const handleFindObject = (id) => {
+    if (!foundObjects.includes(id)) {
+      setFoundObjects((prev) => [...prev, id])
+    }
+  }
+
+  const handleCompleteQuiz = (type) => {
+    setMonsterResult(type)
+    scrollTo('#acte-4', { duration: 1.6 })
+  }
+
+  const handleDownloadCard = () => {
+    alert('L export de la carte sera integre a l etape 5.')
+  }
+
+  const handleShareLink = () => {
+    navigator.clipboard?.writeText?.(window.location.href)
+  }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-6 bg-nuit text-slate-100 relative overflow-hidden">
-      {/* Halo de brume sombre */}
-      <div 
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-citrouille/10 blur-[140px] pointer-events-none"
-        aria-hidden="true"
+    <div className="relative min-h-screen bg-manoir-900 text-fantome font-sans selection:bg-citrouille selection:text-manoir-900">
+      {/* Masque interactif de lampe torche */}
+      <TorchCursor enabled={torchActive} />
+
+      {/* Bouton de son discret */}
+      <SoundToggle
+        isPlaying={isPlayingSound}
+        onToggle={() => setIsPlayingSound((p) => !p)}
       />
 
-      <div className="relative z-10 max-w-lg w-full text-center space-y-8 p-8 rounded-3xl border border-white/10 bg-nuit-800/60 backdrop-blur-md shadow-2xl">
-        <header className="space-y-3">
-          <div className="w-12 h-12 rounded-full bg-citrouille/20 flex items-center justify-center mx-auto text-citrouille">
-            <Flame className="w-6 h-6 animate-pulse" />
-          </div>
-          <h1 className="text-3xl font-bold tracking-tight text-white">
-            Halloween 2026
-          </h1>
-          <p className="text-sm text-slate-400 font-light">
-            Socle technique configure : React, Vite et Tailwind CSS v3.
-          </p>
-        </header>
+      {/* Indicateur de progression des 4 actes */}
+      <ActIndicator activeAct={currentAct} totalActs={4} />
 
-        <section className="space-y-4">
-          <button
-            type="button"
-            onClick={() => setLightsOn((l) => !l)}
-            className="px-6 py-2.5 rounded-full bg-citrouille hover:bg-citrouille-light active:bg-citrouille-dark text-white text-xs tracking-wider uppercase font-medium shadow-lg shadow-citrouille/20 transition-all"
-          >
-            {lightsOn ? 'Eteindre les lanternes' : 'Allumer les lanternes'}
-          </button>
-
-          {lightsOn && (
-            <p className="text-xs text-citrouille animate-fadeIn font-mono">
-              Les veilleuses de la nuit s eveillent...
-            </p>
-          )}
-        </section>
-
-        <footer className="text-[11px] font-mono text-slate-500 border-t border-white/10 pt-4">
-          Branche developp &bull; Deploiement pret pour Netlify / Vercel
-        </footer>
+      {/* Ambiance d ombre de fond */}
+      <div 
+        className="fixed inset-0 pointer-events-none z-0"
+        aria-hidden="true"
+      >
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[700px] h-[700px] rounded-full bg-abysse/30 blur-[180px]" />
       </div>
-    </main>
+
+      {/* Parcours en 4 Actes */}
+      <main className="relative z-10">
+        <Act1Gate onEnter={handleEnter} torchActive={torchActive} />
+        <Act2Mansion
+          foundObjects={foundObjects}
+          onFindObject={handleFindObject}
+        />
+        <Act3Mirror
+          onCompleteQuiz={handleCompleteQuiz}
+          monsterResult={monsterResult}
+        />
+        <Act4Pumpkin
+          onDownloadCard={handleDownloadCard}
+          onShareLink={handleShareLink}
+        />
+      </main>
+    </div>
   )
 }

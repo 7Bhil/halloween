@@ -7,17 +7,34 @@ export default {
   theme: {
     extend: {
       colors: {
-        nuit: {
-          DEFAULT: '#0b090a',
-          900: '#0b090a',
-          800: '#161a1d',
-          700: '#22252a',
+        manoir: {
+          DEFAULT: '#07060a',
+          950: '#040305',
+          900: '#07060a',
+          800: '#100e16',
+          700: '#191522',
+        },
+        abysse: {
+          DEFAULT: '#1b1030',
+          dark: '#120b20',
+          light: '#2a1a4a',
+        },
+        fantome: {
+          DEFAULT: '#e9e4d0',
+          pure: '#f5f2e6',
+          dim: '#c8c2ab',
+          dark: '#938d77',
         },
         citrouille: {
-          DEFAULT: '#ea580c',
-          light: '#f97316',
-          dark: '#c2410c',
+          DEFAULT: '#ff6a1a',
+          light: '#ff843d',
+          dark: '#d94f06',
+          glow: '#ff924d',
         },
+      },
+      fontFamily: {
+        serif: ['Cormorant Garamond', 'Georgia', 'serif'],
+        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
       },
     },
   },
