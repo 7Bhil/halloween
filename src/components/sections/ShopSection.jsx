@@ -71,8 +71,8 @@ export function ShopSection({ onAddToCart }) {
                 <div className="pt-6 mt-6 border-t border-fantome/10 flex items-center justify-between">
                   <div>
                     <span className="text-xs text-fantome/50 font-sans block">Prix</span>
-                    <span className="font-serif text-2xl text-fantome-pure font-semibold">
-                      {product.price.toFixed(2)} &euro;
+                    <span className="font-serif text-xl md:text-2xl text-fantome-pure font-semibold">
+                      {product.price.toLocaleString('fr-FR')} XOF
                     </span>
                   </div>
 

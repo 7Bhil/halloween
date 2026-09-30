@@ -24,7 +24,7 @@ export function CartDrawer({
   if (!isOpen) return null
 
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0)
-  const shipping = subtotal > 60 || subtotal === 0 ? 0 : 4.90
+  const shipping = subtotal > 40000 || subtotal === 0 ? 0 : 3000
   const total = subtotal + shipping
 
   const handleQuantity = (productId, delta) => {
@@ -167,7 +167,7 @@ export function CartDrawer({
             <div className="p-3 rounded-xl bg-manoir-900/80 border border-citrouille/20 space-y-1 text-xs">
               <div className="flex justify-between text-fantome/70">
                 <span>Total à régler :</span>
-                <span className="font-serif text-base text-citrouille font-semibold">{total.toFixed(2)} &euro;</span>
+                <span className="font-serif text-base text-citrouille font-semibold">{total.toLocaleString('fr-FR')} XOF</span>
               </div>
               <p className="text-[10px] text-fantome/50 font-light">
                 Simulation de paiement sécurisé sans intermédiaire.
@@ -210,7 +210,7 @@ export function CartDrawer({
                       {item.name}
                     </h4>
                     <span className="text-xs font-mono text-citrouille">
-                      {item.price.toFixed(2)} &euro;
+                      {item.price.toLocaleString('fr-FR')} XOF
                     </span>
                   </div>
 
@@ -257,18 +257,18 @@ export function CartDrawer({
             <div className="space-y-1.5 text-xs text-fantome-dim font-light">
               <div className="flex justify-between">
                 <span>Sous-total</span>
-                <span className="font-mono text-fantome-pure">{subtotal.toFixed(2)} &euro;</span>
+                <span className="font-mono text-fantome-pure">{subtotal.toLocaleString('fr-FR')} XOF</span>
               </div>
               <div className="flex justify-between">
                 <span>Frais d expédition</span>
                 <span className="font-mono text-fantome-pure">
-                  {shipping === 0 ? 'Offerts (> 60€)' : `${shipping.toFixed(2)} €`}
+                  {shipping === 0 ? 'Offerts (> 40 000 XOF)' : `${shipping.toLocaleString('fr-FR')} XOF`}
                 </span>
               </div>
               <div className="flex justify-between text-sm font-medium text-fantome-pure pt-1 border-t border-fantome/10">
                 <span>Total TTC</span>
                 <span className="font-serif text-lg text-citrouille font-semibold">
-                  {total.toFixed(2)} &euro;
+                  {total.toLocaleString('fr-FR')} XOF
                 </span>
               </div>
             </div>

@@ -262,7 +262,7 @@ export default function App() {
         </div>
         <span className="text-xs font-sans font-medium hidden sm:inline">
           {cartItems.length > 0
-            ? `${cartItems.reduce((acc, i) => acc + i.price * i.quantity, 0).toFixed(2)} €`
+            ? `${cartItems.reduce((acc, i) => acc + i.price * i.quantity, 0).toLocaleString('fr-FR')} XOF`
             : 'Boutique'}
         </span>
       </button>

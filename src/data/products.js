@@ -1,6 +1,6 @@
 /**
  * Catalogue des articles de la Boutique des Ombres (Halloween 2026)
- * Produits d'artisanat d'art, curiosités et accessoires d'Halloween.
+ * Prix exprimés en Franc CFA (XOF)
  */
 
 export const HALLOWEEN_PRODUCTS = [
@@ -8,7 +8,7 @@ export const HALLOWEEN_PRODUCTS = [
     id: 'bougie-cire-noire',
     name: 'Candélabre & Bougie de Cire Noire',
     category: 'Ambiance & Rituels',
-    price: 29.90,
+    price: 15000,
     badge: 'Artisanat',
     description: 'Cire végétale naturelle teintée au charbon actif, mèche de coton crépitante au parfum d encens et de cèdre ancien.',
     iconType: 'candle',
@@ -18,7 +18,7 @@ export const HALLOWEEN_PRODUCTS = [
     id: 'kit-sculpture-citrouille',
     name: 'Trousse de Sculpture Professionnelle',
     category: 'Accessoires',
-    price: 34.50,
+    price: 18500,
     badge: 'Édition Spéciale',
     description: '6 gouges en acier trempé avec manche en bois noirci, racloir cranté et pochoirs d anatomies monstrueuses.',
     iconType: 'tools',
@@ -28,7 +28,7 @@ export const HALLOWEEN_PRODUCTS = [
     id: 'cape-velours-nocturne',
     name: 'Cape en Velours d Abysse',
     category: 'Costumes',
-    price: 89.00,
+    price: 45000,
     badge: 'Haut de Gamme',
     description: 'Velours lourd doublé de soie pourpre sombre, fermoir médiéval en bronze vieilli sculpté en forme de chauve-souris.',
     iconType: 'cape',
@@ -38,7 +38,7 @@ export const HALLOWEEN_PRODUCTS = [
     id: 'grimoire-reliure-cuir',
     name: 'Grimoire Vierge en Cuir Embossé',
     category: 'Papeterie & Curiosités',
-    price: 45.00,
+    price: 25000,
     badge: 'Fait Main',
     description: '240 pages de papier vergé épais à bords déchirés à la main, reliure cousue et fermoir d époque victorienne.',
     iconType: 'book',
@@ -48,7 +48,7 @@ export const HALLOWEEN_PRODUCTS = [
     id: 'elixir-fiole-brume',
     name: 'Fiole d Élixir Brume Spectrale',
     category: 'Décoration & Parfums',
-    price: 24.00,
+    price: 12000,
     badge: 'Édition Limitée',
     description: 'Extrait de parfum d intérieur d automne : mousse de chêne, terre humide, écorce fumée et myrrhe dorée.',
     iconType: 'flask',
@@ -58,7 +58,7 @@ export const HALLOWEEN_PRODUCTS = [
     id: 'masque-venitien-ombre',
     name: 'Masque Vénitien du Corbeau d Os',
     category: 'Costumes & Masques',
-    price: 58.00,
+    price: 32000,
     badge: 'Artiste',
     description: 'Papier mâché vénitien traditionnel peint à la plume, détails dorés à la feuille et ruban de satin noir.',
     iconType: 'mask',
