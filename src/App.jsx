@@ -14,10 +14,14 @@ import { generateHalloweenCard } from './utils/cardGenerator'
 import { useDeviceCapabilities } from './hooks/useDeviceCapabilities'
 import { Fallback2DBackground } from './components/canvas/Fallback2DBackground'
 import { JumpScareManager } from './components/common/JumpScareManager'
+import { ShopSection } from './components/sections/ShopSection'
+import { CartDrawer } from './components/common/CartDrawer'
+import { ShoppingBag } from 'lucide-react'
 
 const STORAGE_KEY_RELICS = 'halloween_mansion_relics_2026'
 const STORAGE_KEY_PUMPKIN = 'halloween_mansion_pumpkin_2026'
 const STORAGE_KEY_MONSTER = 'halloween_mansion_monster_2026'
+const STORAGE_KEY_CART = 'halloween_mansion_cart_2026'
 
 const DEFAULT_PUMPKIN = {
   eyes: 'triangles',
@@ -33,6 +37,60 @@ export default function App() {
   const [torchActive, setTorchActive] = useState(false)
   const [isPlayingSound, setIsPlayingSound] = useState(false)
   const [isSharedMode, setIsSharedMode] = useState(false)
+  const [isCartOpen, setIsCartOpen] = useState(false)
+
+  // Persistance localStorage du panier e-commerce
+  const [cartItems, setCartItems] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_CART)
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  })
+
+  // Synchronisation du panier avec localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY_CART, JSON.stringify(cartItems))
+    } catch {
+      // Ignorer
+    }
+  }, [cartItems])
+
+  const handleAddToCart = (product) => {
+    setCartItems((prev) => {
+      const existing = prev.find((item) => item.id === product.id)
+      if (existing) {
+        return prev.map((item) =>
+          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+        )
+      }
+      return [...prev, { ...product, quantity: 1 }]
+    })
+  }
+
+  const handleUpdateCartQuantity = (productId, delta) => {
+    setCartItems((prev) =>
+      prev
+        .map((item) => {
+          if (item.id === productId) {
+            const newQty = item.quantity + delta
+            return newQty > 0 ? { ...item, quantity: newQty } : null
+          }
+          return item
+        })
+        .filter(Boolean)
+    )
+  }
+
+  const handleRemoveFromCart = (productId) => {
+    setCartItems((prev) => prev.filter((item) => item.id !== productId))
+  }
+
+  const handleClearCart = () => {
+    setCartItems([])
+  }
 
   // Persistance localStorage du monstre révélé
   const [monsterResult, setMonsterResult] = useState(() => {
@@ -187,6 +245,28 @@ export default function App() {
       {/* Gestionnaire de sursaut (Jump Scare) subtil, dissimulable et paramétrable */}
       <JumpScareManager onTriggerScare={() => mansionAudio.playScareWhisper()} />
 
+      {/* Bouton Panier Flottant avec badge du nombre d articles */}
+      <button
+        type="button"
+        onClick={() => setIsCartOpen(true)}
+        aria-label="Voir le panier"
+        className="fixed top-6 right-20 z-40 flex items-center gap-2.5 px-4 py-2 rounded-full bg-abysse/80 border border-citrouille/40 backdrop-blur-md text-fantome-pure hover:bg-abysse hover:border-citrouille transition-all shadow-lg shadow-citrouille/10"
+      >
+        <div className="relative">
+          <ShoppingBag className="w-4 h-4 text-citrouille" />
+          {cartItems.reduce((acc, i) => acc + i.quantity, 0) > 0 && (
+            <span className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-citrouille text-manoir-900 font-mono text-[10px] font-bold flex items-center justify-center animate-pulse">
+              {cartItems.reduce((acc, i) => acc + i.quantity, 0)}
+            </span>
+          )}
+        </div>
+        <span className="text-xs font-sans font-medium hidden sm:inline">
+          {cartItems.length > 0
+            ? `${cartItems.reduce((acc, i) => acc + i.price * i.quantity, 0).toFixed(2)} €`
+            : 'Boutique'}
+        </span>
+      </button>
+
       {/* Bouton de son discret avec contrôle du moteur Web Audio */}
       <SoundToggle
         isPlaying={isPlayingSound}
@@ -196,7 +276,17 @@ export default function App() {
       {/* Indicateur de progression des 4 actes */}
       <ActIndicator activeAct={currentAct} totalActs={4} />
 
-      {/* Parcours scrollytelling en 4 Actes */}
+      {/* Tiroir de panier e-commerce et tunnel de checkout */}
+      <CartDrawer
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        cartItems={cartItems}
+        onUpdateQuantity={handleUpdateCartQuantity}
+        onRemoveItem={handleRemoveFromCart}
+        onClearCart={handleClearCart}
+      />
+
+      {/* Parcours scrollytelling en 4 Actes + Boutique */}
       <main className="relative z-10">
         <Act1Gate onEnter={handleEnter} torchActive={torchActive} />
         <Act2Mansion
@@ -215,6 +305,7 @@ export default function App() {
           isSharedView={isSharedMode}
           onSwitchToMyPumpkin={handleSwitchToMyPumpkin}
         />
+        <ShopSection onAddToCart={handleAddToCart} />
       </main>
     </div>
   )
