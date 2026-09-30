@@ -43,16 +43,27 @@ export function ShopSection({ onAddToCart }) {
             return (
               <article
                 key={product.id}
-                className="relative p-7 rounded-3xl bg-abysse/60 border border-fantome/15 hover:border-citrouille/40 backdrop-blur-md shadow-xl flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 group"
+                className="relative rounded-3xl bg-abysse/60 border border-fantome/15 hover:border-citrouille/40 backdrop-blur-md shadow-xl flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 group overflow-hidden"
               >
-                <div className="space-y-4">
-                  {/* Badge & Catégorie */}
+                {/* Photo de l article */}
+                <div className="relative w-full h-48 overflow-hidden bg-manoir-900 border-b border-fantome/10">
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    loading="lazy"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 filter brightness-90 group-hover:brightness-100"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-manoir-900 via-transparent to-transparent opacity-60" />
+                  <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-manoir-900/80 backdrop-blur-md border border-citrouille/40 text-[10px] font-mono text-citrouille-light">
+                    {product.badge}
+                  </span>
+                </div>
+
+                <div className="p-6 space-y-4">
+                  {/* Catégorie */}
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-mono uppercase tracking-widest text-citrouille">
                       {product.category}
-                    </span>
-                    <span className="px-2.5 py-1 rounded-full bg-citrouille/10 border border-citrouille/30 text-[10px] font-mono text-citrouille-light">
-                      {product.badge}
                     </span>
                   </div>
 

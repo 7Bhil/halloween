@@ -205,6 +205,13 @@ export function CartDrawer({
                   key={item.id}
                   className="p-3.5 rounded-2xl bg-manoir-900/80 border border-fantome/10 flex items-center justify-between gap-3"
                 >
+                  {item.image && (
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-12 h-12 rounded-xl object-cover border border-fantome/15 flex-shrink-0"
+                    />
+                  )}
                   <div className="flex-1 min-w-0">
                     <h4 className="font-serif text-sm text-fantome-pure truncate">
                       {item.name}
