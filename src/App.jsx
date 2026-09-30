@@ -14,6 +14,7 @@ import { generateHalloweenCard } from './utils/cardGenerator'
 
 const STORAGE_KEY_RELICS = 'halloween_mansion_relics_2026'
 const STORAGE_KEY_PUMPKIN = 'halloween_mansion_pumpkin_2026'
+const STORAGE_KEY_MONSTER = 'halloween_mansion_monster_2026'
 
 const DEFAULT_PUMPKIN = {
   eyes: 'triangles',
@@ -27,8 +28,16 @@ export default function App() {
   const [currentAct, setCurrentAct] = useState(1)
   const [torchActive, setTorchActive] = useState(false)
   const [isPlayingSound, setIsPlayingSound] = useState(false)
-  const [monsterResult, setMonsterResult] = useState(null)
   const [isSharedMode, setIsSharedMode] = useState(false)
+
+  // Persistance localStorage du monstre révélé
+  const [monsterResult, setMonsterResult] = useState(() => {
+    try {
+      return localStorage.getItem(STORAGE_KEY_MONSTER) || null
+    } catch {
+      return null
+    }
+  })
 
   // Persistance localStorage des reliques découvertes
   const [foundObjects, setFoundObjects] = useState(() => {
@@ -124,6 +133,11 @@ export default function App() {
 
   const handleCompleteQuiz = (type) => {
     setMonsterResult(type)
+    try {
+      localStorage.setItem(STORAGE_KEY_MONSTER, type)
+    } catch {
+      // Ignorer
+    }
     scrollTo('#acte-4', { duration: 1.6 })
   }
 
