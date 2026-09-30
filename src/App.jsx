@@ -8,14 +8,36 @@ import { Act2Mansion } from './components/sections/Act2Mansion'
 import { Act3Mirror } from './components/sections/Act3Mirror'
 import { Act4Pumpkin } from './components/sections/Act4Pumpkin'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { mansionAudio } from './utils/mansionAudio'
+
+const STORAGE_KEY_RELICS = 'halloween_mansion_relics_2026'
 
 export default function App() {
   const { scrollTo } = useLenisScroll()
   const [currentAct, setCurrentAct] = useState(1)
   const [torchActive, setTorchActive] = useState(false)
   const [isPlayingSound, setIsPlayingSound] = useState(false)
-  const [foundObjects, setFoundObjects] = useState([])
   const [monsterResult, setMonsterResult] = useState(null)
+
+  // Persistance localStorage des reliques découvertes
+  const [foundObjects, setFoundObjects] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_RELICS)
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  })
+
+  // Synchronisation du niveau de tension sonore selon les reliques
+  useEffect(() => {
+    mansionAudio.setTension(foundObjects.length)
+    try {
+      localStorage.setItem(STORAGE_KEY_RELICS, JSON.stringify(foundObjects))
+    } catch {
+      // Ignore les erreurs de quota ou mode navigation privée
+    }
+  }, [foundObjects])
 
   // Suivi de l acte actif au scroll avec ScrollTrigger
   useEffect(() => {
@@ -38,7 +60,19 @@ export default function App() {
   const handleEnter = () => {
     setTorchActive(true)
     setIsPlayingSound(true)
+    mansionAudio.start()
+    mansionAudio.playDoorCreak()
     scrollTo('#acte-2', { duration: 1.6 })
+  }
+
+  const handleToggleSound = () => {
+    const nextState = !isPlayingSound
+    setIsPlayingSound(nextState)
+    if (nextState) {
+      mansionAudio.start()
+    } else {
+      mansionAudio.stop()
+    }
   }
 
   const handleFindObject = (id) => {
@@ -53,7 +87,7 @@ export default function App() {
   }
 
   const handleDownloadCard = () => {
-    alert('L export de la carte sera integre a l etape 5.')
+    alert('L export de la carte sera intègre à l étape 5.')
   }
 
   const handleShareLink = () => {
@@ -62,13 +96,13 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen bg-manoir-900 text-fantome font-sans selection:bg-citrouille selection:text-manoir-900">
-      {/* Scene 3D WebGL (Architecture, Brume, Eclairage 3D et Shader de lampe torche) */}
+      {/* Scène 3D WebGL (Architecture, Brume, Éclairage 3D et Shader de lampe torche) */}
       <MansionScene currentAct={currentAct} torchActive={torchActive} />
 
-      {/* Bouton de son discret */}
+      {/* Bouton de son discret avec contrôle du moteur Web Audio */}
       <SoundToggle
         isPlaying={isPlayingSound}
-        onToggle={() => setIsPlayingSound((p) => !p)}
+        onToggle={handleToggleSound}
       />
 
       {/* Indicateur de progression des 4 actes */}
