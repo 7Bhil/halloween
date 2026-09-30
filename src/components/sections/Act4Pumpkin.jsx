@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Sparkles, Download, Share2, Flame, RefreshCw, Check } from 'lucide-react'
+import { Sparkles, Download, Share2, Flame, RefreshCw, Check, ArrowRight, User } from 'lucide-react'
 import { PumpkinCanvas } from '../canvas/PumpkinCanvas'
 import { mansionAudio } from '../../utils/mansionAudio'
 
@@ -30,6 +30,8 @@ export function Act4Pumpkin({
   onShareLink,
   pumpkinConfig,
   onChangePumpkin,
+  isSharedView = false,
+  onSwitchToMyPumpkin,
 }) {
   const [eyes, setEyes] = useState(() => pumpkinConfig?.eyes || 'triangles')
   const [nose, setNose] = useState(() => pumpkinConfig?.nose || 'triangle')
@@ -39,28 +41,39 @@ export function Act4Pumpkin({
   const [flicker, setFlicker] = useState(1.0)
   const [copiedNotification, setCopiedNotification] = useState(false)
 
-  // Effet d animation de vacillement de la flamme intérieure
+  // Met à jour l'état si les props externes changent (ex: partage d'URL)
+  useEffect(() => {
+    if (pumpkinConfig) {
+      setEyes(pumpkinConfig.eyes || 'triangles')
+      setNose(pumpkinConfig.nose || 'triangle')
+      setMouth(pumpkinConfig.mouth || 'smile')
+      setMessage(pumpkinConfig.message || 'Que la nuit veille sur nous...')
+    }
+  }, [pumpkinConfig])
+
+  // Vacillement de la flamme intérieure
   useEffect(() => {
     if (!isLit) return
     const interval = setInterval(() => {
-      // Bruit subtil entre 0.85 et 1.15
       setFlicker(0.85 + Math.random() * 0.3)
     }, 120)
     return () => clearInterval(interval)
   }, [isLit])
 
-  // Synchronisation avec les props et le localStorage
+  // Synchronisation avec les props et le localStorage (uniquement hors mode visiteur)
   useEffect(() => {
+    if (isSharedView) return
     const config = { eyes, nose, mouth, message }
     onChangePumpkin?.(config)
     try {
       localStorage.setItem(STORAGE_KEY_PUMPKIN, JSON.stringify(config))
     } catch {
-      // Ignore les erreurs de quota ou mode navigation privée
+      // Ignorer erreurs de quota
     }
-  }, [eyes, nose, mouth, message, onChangePumpkin])
+  }, [eyes, nose, mouth, message, isSharedView, onChangePumpkin])
 
   const handleRandomize = () => {
+    if (isSharedView) return
     const randomEye = EYE_OPTIONS[Math.floor(Math.random() * EYE_OPTIONS.length)].id
     const randomNose = NOSE_OPTIONS[Math.floor(Math.random() * NOSE_OPTIONS.length)].id
     const randomMouth = MOUTH_OPTIONS[Math.floor(Math.random() * MOUTH_OPTIONS.length)].id
@@ -96,16 +109,33 @@ export function Act4Pumpkin({
             id="title-acte-4"
             className="font-serif text-4xl md:text-5xl lg:text-6xl font-normal text-fantome-pure"
           >
-            La Citrouille des Ombres
+            {isSharedView ? 'Une Citrouille Reçue' : 'La Citrouille des Ombres'}
           </h2>
           <p className="font-sans text-sm text-fantome-dim font-light leading-relaxed">
-            Sculptez votre citrouille rituelle, insufflez-lui une lueur vacillante et gravez votre serment protecteur avant l aube.
+            {isSharedView
+              ? 'Un voyageur de la nuit vous a transmis son offrande scellée dans les ténèbres.'
+              : 'Sculptez votre citrouille rituelle, insufflez-lui une lueur vacillante et gravez votre serment protecteur avant l aube.'}
           </p>
+
+          {/* Bandeau d'information si en mode partage lecture seule */}
+          {isSharedView && (
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-citrouille/15 border border-citrouille/40 text-xs font-sans text-citrouille-light">
+              <User className="w-4 h-4 text-citrouille" />
+              <span>Vous admirez l offrande sculptée d un autre visiteur.</span>
+              <button
+                type="button"
+                onClick={onSwitchToMyPumpkin}
+                className="underline underline-offset-2 ml-2 font-medium hover:text-white"
+              >
+                Sculpter la mienne &rarr;
+              </button>
+            </div>
+          )}
         </header>
 
         {/* Studio de sculpture interactif */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-abysse/55 border border-fantome/15 rounded-3xl p-6 md:p-10 backdrop-blur-md shadow-2xl">
-          {/* Apercu dynamique en Canvas 2D */}
+          {/* Aperçu dynamique en Canvas 2D */}
           <div className="lg:col-span-5 flex flex-col items-center justify-center space-y-4 relative">
             <div className="relative flex items-center justify-center p-4 rounded-2xl bg-manoir-900/60 border border-fantome/10 w-full overflow-hidden">
               <PumpkinCanvas
@@ -117,7 +147,7 @@ export function Act4Pumpkin({
               />
             </div>
 
-            {/* Contrôles rapides sous la citrouille */}
+            {/* Contrôles sous la citrouille */}
             <div className="flex items-center gap-3">
               <button
                 type="button"
@@ -132,143 +162,180 @@ export function Act4Pumpkin({
                 <span>{isLit ? 'Flamme ardente' : 'Éteindre'}</span>
               </button>
 
-              <button
-                type="button"
-                onClick={handleRandomize}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-sans bg-manoir-800 border border-fantome/20 text-fantome-dim hover:text-fantome-pure hover:border-citrouille/40 transition-colors"
-              >
-                <RefreshCw className="w-3.5 h-3.5" />
-                <span>Aléatoire</span>
-              </button>
+              {!isSharedView && (
+                <button
+                  type="button"
+                  onClick={handleRandomize}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-sans bg-manoir-800 border border-fantome/20 text-fantome-dim hover:text-fantome-pure hover:border-citrouille/40 transition-colors"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Aléatoire</span>
+                </button>
+              )}
             </div>
           </div>
 
-          {/* Panneau de sélection des formes et message */}
+          {/* Panneau de configuration (actif ou lecture seule) */}
           <div className="lg:col-span-7 space-y-6">
-            {/* Choix des yeux */}
-            <div className="space-y-2">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-citrouille">
-                1. Les Yeux
-              </span>
-              <div className="grid grid-cols-2 gap-2">
-                {EYE_OPTIONS.map((opt) => (
+            {isSharedView ? (
+              <div className="space-y-6">
+                <div className="p-6 rounded-2xl bg-manoir-900/80 border border-citrouille/30 space-y-3">
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-citrouille">
+                    Serment scellé sur la citrouille
+                  </span>
+                  <p className="font-serif italic text-xl text-fantome-pure">
+                    « {message || 'Que la nuit veille sur nous...'} »
+                  </p>
+                </div>
+
+                <div className="pt-4 flex flex-col sm:flex-row gap-3">
                   <button
-                    key={opt.id}
                     type="button"
-                    onClick={() => {
-                      setEyes(opt.id)
-                      mansionAudio.playRelicFound()
-                    }}
-                    className={`px-3 py-2 rounded-xl text-left text-xs font-sans border transition-all duration-200 ${
-                      eyes === opt.id
-                        ? 'bg-citrouille/20 border-citrouille text-citrouille-light font-medium shadow-sm'
-                        : 'bg-manoir-800/80 border-fantome/10 text-fantome-dim hover:border-citrouille/30'
-                    }`}
+                    onClick={onSwitchToMyPumpkin}
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-citrouille text-manoir-900 font-sans text-xs tracking-wider uppercase font-semibold shadow-lg shadow-citrouille/20 hover:bg-citrouille-light transition-all"
                   >
-                    {opt.label}
+                    <span>Sculpter ma propre citrouille</span>
+                    <ArrowRight className="w-4 h-4" />
                   </button>
-                ))}
-              </div>
-            </div>
 
-            {/* Choix du nez */}
-            <div className="space-y-2">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-citrouille">
-                2. Le Nez
-              </span>
-              <div className="grid grid-cols-3 gap-2">
-                {NOSE_OPTIONS.map((opt) => (
                   <button
-                    key={opt.id}
                     type="button"
-                    onClick={() => {
-                      setNose(opt.id)
-                      mansionAudio.playRelicFound()
-                    }}
-                    className={`px-3 py-2 rounded-xl text-left text-xs font-sans border transition-all duration-200 ${
-                      nose === opt.id
-                        ? 'bg-citrouille/20 border-citrouille text-citrouille-light font-medium shadow-sm'
-                        : 'bg-manoir-800/80 border-fantome/10 text-fantome-dim hover:border-citrouille/30'
-                    }`}
+                    onClick={onDownloadCard}
+                    className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-fantome/10 hover:bg-fantome/20 text-fantome-pure font-sans text-xs tracking-wider uppercase font-medium border border-fantome/20 transition-all"
                   >
-                    {opt.label}
+                    <Download className="w-4 h-4 text-citrouille" />
+                    <span>Télécharger la carte</span>
                   </button>
-                ))}
+                </div>
               </div>
-            </div>
+            ) : (
+              <>
+                {/* Choix des yeux */}
+                <div className="space-y-2">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-citrouille">
+                    1. Les Yeux
+                  </span>
+                  <div className="grid grid-cols-2 gap-2">
+                    {EYE_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => {
+                          setEyes(opt.id)
+                          mansionAudio.playRelicFound()
+                        }}
+                        className={`px-3 py-2 rounded-xl text-left text-xs font-sans border transition-all duration-200 ${
+                          eyes === opt.id
+                            ? 'bg-citrouille/20 border-citrouille text-citrouille-light font-medium shadow-sm'
+                            : 'bg-manoir-800/80 border-fantome/10 text-fantome-dim hover:border-citrouille/30'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
-            {/* Choix de la bouche */}
-            <div className="space-y-2">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-citrouille">
-                3. La Bouche
-              </span>
-              <div className="grid grid-cols-2 gap-2">
-                {MOUTH_OPTIONS.map((opt) => (
+                {/* Choix du nez */}
+                <div className="space-y-2">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-citrouille">
+                    2. Le Nez
+                  </span>
+                  <div className="grid grid-cols-3 gap-2">
+                    {NOSE_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => {
+                          setNose(opt.id)
+                          mansionAudio.playRelicFound()
+                        }}
+                        className={`px-3 py-2 rounded-xl text-left text-xs font-sans border transition-all duration-200 ${
+                          nose === opt.id
+                            ? 'bg-citrouille/20 border-citrouille text-citrouille-light font-medium shadow-sm'
+                            : 'bg-manoir-800/80 border-fantome/10 text-fantome-dim hover:border-citrouille/30'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Choix de la bouche */}
+                <div className="space-y-2">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-citrouille">
+                    3. La Bouche
+                  </span>
+                  <div className="grid grid-cols-2 gap-2">
+                    {MOUTH_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => {
+                          setMouth(opt.id)
+                          mansionAudio.playRelicFound()
+                        }}
+                        className={`px-3 py-2 rounded-xl text-left text-xs font-sans border transition-all duration-200 ${
+                          mouth === opt.id
+                            ? 'bg-citrouille/20 border-citrouille text-citrouille-light font-medium shadow-sm'
+                            : 'bg-manoir-800/80 border-fantome/10 text-fantome-dim hover:border-citrouille/30'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Message gravé (40 car max) */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center text-xs font-mono text-fantome/70">
+                    <label htmlFor="pumpkin-serment">4. Serment gravé sur l écorce</label>
+                    <span>{message.length} / 40</span>
+                  </div>
+                  <input
+                    id="pumpkin-serment"
+                    type="text"
+                    maxLength={40}
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    placeholder="Que la nuit veille sur nous..."
+                    className="w-full px-4 py-2.5 rounded-xl bg-manoir-900/90 border border-fantome/20 text-fantome-pure placeholder:text-fantome/30 text-sm focus:outline-none focus:border-citrouille focus:ring-1 focus:ring-citrouille transition-all"
+                  />
+                </div>
+
+                {/* Actions de partage et téléchargement */}
+                <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-fantome/10">
                   <button
-                    key={opt.id}
                     type="button"
-                    onClick={() => {
-                      setMouth(opt.id)
-                      mansionAudio.playRelicFound()
-                    }}
-                    className={`px-3 py-2 rounded-xl text-left text-xs font-sans border transition-all duration-200 ${
-                      mouth === opt.id
-                        ? 'bg-citrouille/20 border-citrouille text-citrouille-light font-medium shadow-sm'
-                        : 'bg-manoir-800/80 border-fantome/10 text-fantome-dim hover:border-citrouille/30'
-                    }`}
+                    onClick={onDownloadCard}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-fantome/10 hover:bg-fantome/20 text-fantome-pure font-sans text-xs tracking-wider uppercase font-medium border border-fantome/20 transition-all duration-300"
                   >
-                    {opt.label}
+                    <Download className="w-4 h-4 text-citrouille" />
+                    <span>Télécharger ma carte</span>
                   </button>
-                ))}
-              </div>
-            </div>
 
-            {/* Message gravé (40 car max) */}
-            <div className="space-y-2">
-              <div className="flex justify-between items-center text-xs font-mono text-fantome/70">
-                <label htmlFor="pumpkin-serment">4. Serment gravé sur l écorce</label>
-                <span>{message.length} / 40</span>
-              </div>
-              <input
-                id="pumpkin-serment"
-                type="text"
-                maxLength={40}
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Que la nuit veille sur nous..."
-                className="w-full px-4 py-2.5 rounded-xl bg-manoir-900/90 border border-fantome/20 text-fantome-pure placeholder:text-fantome/30 text-sm focus:outline-none focus:border-citrouille focus:ring-1 focus:ring-citrouille transition-all"
-              />
-            </div>
-
-            {/* Actions de partage et téléchargement */}
-            <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-fantome/10">
-              <button
-                type="button"
-                onClick={onDownloadCard}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-fantome/10 hover:bg-fantome/20 text-fantome-pure font-sans text-xs tracking-wider uppercase font-medium border border-fantome/20 transition-all duration-300"
-              >
-                <Download className="w-4 h-4 text-citrouille" />
-                <span>Télécharger ma carte</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={handleShareClick}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-citrouille hover:bg-citrouille-light text-manoir-900 font-sans text-xs tracking-wider uppercase font-semibold shadow-lg shadow-citrouille/20 transition-all duration-300"
-              >
-                {copiedNotification ? (
-                  <>
-                    <Check className="w-4 h-4 text-manoir-900" />
-                    <span>Lien copié</span>
-                  </>
-                ) : (
-                  <>
-                    <Share2 className="w-4 h-4 text-manoir-900" />
-                    <span>Copier mon lien</span>
-                  </>
-                )}
-              </button>
-            </div>
+                  <button
+                    type="button"
+                    onClick={handleShareClick}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-citrouille hover:bg-citrouille-light text-manoir-900 font-sans text-xs tracking-wider uppercase font-semibold shadow-lg shadow-citrouille/20 transition-all duration-300"
+                  >
+                    {copiedNotification ? (
+                      <>
+                        <Check className="w-4 h-4 text-manoir-900" />
+                        <span>Lien copié</span>
+                      </>
+                    ) : (
+                      <>
+                        <Share2 className="w-4 h-4 text-manoir-900" />
+                        <span>Copier mon lien</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

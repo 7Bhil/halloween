@@ -9,9 +9,18 @@ import { Act3Mirror } from './components/sections/Act3Mirror'
 import { Act4Pumpkin } from './components/sections/Act4Pumpkin'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { mansionAudio } from './utils/mansionAudio'
+import { encodeSharePayload, decodeSharePayload } from './utils/shareEncoding'
+import { generateHalloweenCard } from './utils/cardGenerator'
 
 const STORAGE_KEY_RELICS = 'halloween_mansion_relics_2026'
 const STORAGE_KEY_PUMPKIN = 'halloween_mansion_pumpkin_2026'
+
+const DEFAULT_PUMPKIN = {
+  eyes: 'triangles',
+  nose: 'triangle',
+  mouth: 'smile',
+  message: 'Que la nuit veille sur nous...',
+}
 
 export default function App() {
   const { scrollTo } = useLenisScroll()
@@ -19,6 +28,7 @@ export default function App() {
   const [torchActive, setTorchActive] = useState(false)
   const [isPlayingSound, setIsPlayingSound] = useState(false)
   const [monsterResult, setMonsterResult] = useState(null)
+  const [isSharedMode, setIsSharedMode] = useState(false)
 
   // Persistance localStorage des reliques découvertes
   const [foundObjects, setFoundObjects] = useState(() => {
@@ -30,27 +40,35 @@ export default function App() {
     }
   })
 
-  // Configuration de la citrouille sculptée (avec persistance locale)
+  // Configuration locale de la citrouille sculptée
   const [pumpkinConfig, setPumpkinConfig] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY_PUMPKIN)
-      return saved
-        ? JSON.parse(saved)
-        : {
-            eyes: 'triangles',
-            nose: 'triangle',
-            mouth: 'smile',
-            message: 'Que la nuit veille sur nous...',
-          }
+      return saved ? JSON.parse(saved) : DEFAULT_PUMPKIN
     } catch {
-      return {
-        eyes: 'triangles',
-        nose: 'triangle',
-        mouth: 'smile',
-        message: 'Que la nuit veille sur nous...',
-      }
+      return DEFAULT_PUMPKIN
     }
   })
+
+  // Vérification de paramètre URL de partage ?c=...
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const shareParam = params.get('c')
+    if (shareParam) {
+      const decoded = decodeSharePayload(shareParam)
+      if (decoded) {
+        setIsSharedMode(true)
+        setPumpkinConfig(decoded.pumpkin)
+        if (decoded.monster) {
+          setMonsterResult(decoded.monster)
+        }
+        // Ouvrir directement sur l'Acte 4 pour admirer la citrouille partagée
+        setTimeout(() => {
+          scrollTo('#acte-4', { duration: 1.2 })
+        }, 400)
+      }
+    }
+  }, [scrollTo])
 
   // Synchronisation du niveau de tension sonore selon les reliques
   useEffect(() => {
@@ -58,7 +76,7 @@ export default function App() {
     try {
       localStorage.setItem(STORAGE_KEY_RELICS, JSON.stringify(foundObjects))
     } catch {
-      // Ignore les erreurs de quota ou mode navigation privée
+      // Ignorer
     }
   }, [foundObjects])
 
@@ -109,12 +127,34 @@ export default function App() {
     scrollTo('#acte-4', { duration: 1.6 })
   }
 
+  // Exportation de la carte 1080x1920 PNG
   const handleDownloadCard = () => {
-    alert('L export de la carte sera intègre à l étape 5.')
+    generateHalloweenCard({
+      pumpkin: pumpkinConfig,
+      monster: monsterResult,
+    })
+    mansionAudio.playRelicFound()
   }
 
+  // Génération de l'URL de partage avec encodage base64 sécurisé
   const handleShareLink = () => {
-    navigator.clipboard?.writeText?.(window.location.href)
+    const payload = encodeSharePayload(pumpkinConfig, monsterResult)
+    if (!payload) return
+    const url = new URL(window.location.origin + window.location.pathname)
+    url.searchParams.set('c', payload)
+    navigator.clipboard?.writeText?.(url.toString())
+  }
+
+  // Basculer du mode visiteur vers ma propre citrouille
+  const handleSwitchToMyPumpkin = () => {
+    setIsSharedMode(false)
+    window.history.replaceState({}, '', window.location.pathname)
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_PUMPKIN)
+      setPumpkinConfig(saved ? JSON.parse(saved) : DEFAULT_PUMPKIN)
+    } catch {
+      setPumpkinConfig(DEFAULT_PUMPKIN)
+    }
   }
 
   return (
@@ -147,6 +187,8 @@ export default function App() {
           onChangePumpkin={setPumpkinConfig}
           onDownloadCard={handleDownloadCard}
           onShareLink={handleShareLink}
+          isSharedView={isSharedMode}
+          onSwitchToMyPumpkin={handleSwitchToMyPumpkin}
         />
       </main>
     </div>
