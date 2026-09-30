@@ -11,6 +11,9 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { mansionAudio } from './utils/mansionAudio'
 import { encodeSharePayload, decodeSharePayload } from './utils/shareEncoding'
 import { generateHalloweenCard } from './utils/cardGenerator'
+import { useDeviceCapabilities } from './hooks/useDeviceCapabilities'
+import { Fallback2DBackground } from './components/canvas/Fallback2DBackground'
+import { JumpScareManager } from './components/common/JumpScareManager'
 
 const STORAGE_KEY_RELICS = 'halloween_mansion_relics_2026'
 const STORAGE_KEY_PUMPKIN = 'halloween_mansion_pumpkin_2026'
@@ -25,6 +28,7 @@ const DEFAULT_PUMPKIN = {
 
 export default function App() {
   const { scrollTo } = useLenisScroll()
+  const { shouldFallback2D, toggleMode } = useDeviceCapabilities()
   const [currentAct, setCurrentAct] = useState(1)
   const [torchActive, setTorchActive] = useState(false)
   const [isPlayingSound, setIsPlayingSound] = useState(false)
@@ -173,8 +177,15 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen bg-manoir-900 text-fantome font-sans selection:bg-citrouille selection:text-manoir-900">
-      {/* Scène 3D WebGL (Architecture, Brume, Éclairage 3D et Shader de lampe torche) */}
-      <MansionScene currentAct={currentAct} torchActive={torchActive} />
+      {/* Scène 3D WebGL OU Rendu de secours 2D (CSS + Canvas) selon les capacités du matériel */}
+      {shouldFallback2D ? (
+        <Fallback2DBackground torchActive={torchActive} />
+      ) : (
+        <MansionScene currentAct={currentAct} torchActive={torchActive} />
+      )}
+
+      {/* Gestionnaire de sursaut (Jump Scare) subtil, dissimulable et paramétrable */}
+      <JumpScareManager onTriggerScare={() => mansionAudio.playScareWhisper()} />
 
       {/* Bouton de son discret avec contrôle du moteur Web Audio */}
       <SoundToggle

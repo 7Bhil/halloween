@@ -161,6 +161,26 @@ class MansionSoundEngine {
     osc.stop(now + 0.95)
   }
 
+  // Effet de souffle / chuchotement spectral pour le jump scare
+  playScareWhisper() {
+    if (!this.isPlaying || !this.ctx) return
+    const now = this.ctx.currentTime
+
+    // Coup de basse bref et sursaut d'air
+    const osc = this.ctx.createOscillator()
+    const gain = this.ctx.createGain()
+    osc.type = 'triangle'
+    osc.frequency.setValueAtTime(90, now)
+    osc.frequency.exponentialRampToValueAtTime(30, now + 0.3)
+    gain.gain.setValueAtTime(0.45, now)
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35)
+
+    osc.connect(gain)
+    gain.connect(this.masterGain)
+    osc.start(now)
+    osc.stop(now + 0.4)
+  }
+
   setTension(relicsCount) {
     this.tensionLevel = relicsCount
   }
