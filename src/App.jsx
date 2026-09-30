@@ -11,6 +11,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { mansionAudio } from './utils/mansionAudio'
 
 const STORAGE_KEY_RELICS = 'halloween_mansion_relics_2026'
+const STORAGE_KEY_PUMPKIN = 'halloween_mansion_pumpkin_2026'
 
 export default function App() {
   const { scrollTo } = useLenisScroll()
@@ -26,6 +27,28 @@ export default function App() {
       return saved ? JSON.parse(saved) : []
     } catch {
       return []
+    }
+  })
+
+  // Configuration de la citrouille sculptée (avec persistance locale)
+  const [pumpkinConfig, setPumpkinConfig] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_PUMPKIN)
+      return saved
+        ? JSON.parse(saved)
+        : {
+            eyes: 'triangles',
+            nose: 'triangle',
+            mouth: 'smile',
+            message: 'Que la nuit veille sur nous...',
+          }
+    } catch {
+      return {
+        eyes: 'triangles',
+        nose: 'triangle',
+        mouth: 'smile',
+        message: 'Que la nuit veille sur nous...',
+      }
     }
   })
 
@@ -120,6 +143,8 @@ export default function App() {
           monsterResult={monsterResult}
         />
         <Act4Pumpkin
+          pumpkinConfig={pumpkinConfig}
+          onChangePumpkin={setPumpkinConfig}
           onDownloadCard={handleDownloadCard}
           onShareLink={handleShareLink}
         />
